@@ -4,6 +4,20 @@
   background-color: rgb(53, 39, 58);
 }
 
+.content-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.content{
+  max-width: 1440px;
+  width: 100%;
+  
+
+}
+
 /* SECTION 1 — HEADER / LOGO */
 .home-header {
   width: 100%;
