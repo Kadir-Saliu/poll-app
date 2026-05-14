@@ -1,7 +1,14 @@
 :host {
   display: block;
   min-height: 100vh;
+}
+
+:host-context(app-home){
   background-color: rgb(53, 39, 58);
+}
+
+:host-context(app-create-survey) {
+  background-color: transparent;
 }
 
 .content-wrapper{
@@ -14,7 +21,6 @@
 .content{
   max-width: 1440px;
   width: 100%;
-  
 
 }
 

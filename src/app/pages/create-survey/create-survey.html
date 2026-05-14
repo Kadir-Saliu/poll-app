@@ -1,0 +1,123 @@
+<div class="content-wrapper">
+  <div class="content">
+    <div class="create-container">
+      <!-- TOP BAR -->
+      <!-- DRAFT ALLEINE -->
+      <span class="status draft">Draft</span>
+
+      <!-- CONTAINER FÜR TITLE + CANCEL -->
+      <div class="top-right">
+        <h2>Create new survey</h2>
+        <button class="cancel-btn" [routerLink]="['/']">Cancel</button>
+      </div>
+
+      <!-- MAIN SECTION -->
+      <section class="main-section">
+        <!-- OBERER CONTAINER -->
+        <div class="upper-container">
+          <!-- LINKS -->
+          <div class="left">
+            <!-- SURVEY NAME -->
+            <div class="form-group">
+              <label>Survey name</label>
+              <div class="input-row">
+                <input type="text" placeholder="Enter survey name" />
+                <button class="trash-btn">🗑</button>
+              </div>
+            </div>
+
+            <!-- END DATE + CATEGORY -->
+            <div class="form-row">
+              <!-- END DATE -->
+              <div class="form-group">
+                <label>Set end date (optional)</label>
+                <div class="input-row">
+                  <input type="date" />
+                  <button class="trash-btn">🗑</button>
+                </div>
+              </div>
+
+              <!-- CATEGORY (kein input-row!) -->
+              <div class="form-group">
+                <select>
+                  <option value="">Choose category</option>
+                  <option>Team activities</option>
+                  <option>Workplace</option>
+                  <option>Event planning</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECHTS -->
+          <div class="right">
+            <div class="form-group">
+              <label>Describing text (optional)</label>
+              <div class="input-row">
+                <textarea placeholder="Add additional context"></textarea>
+                <button class="trash-btn">🗑</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UNTERER CONTAINER -->
+        <div class="lower-container">
+          <!-- LINKS -->
+          <div class="left">
+            <!-- QUESTION BLOCK -->
+            <div class="question-block">
+              <div class="question-header">
+                <h2>1. Question</h2>
+                <button class="trash-btn">🗑</button>
+              </div>
+
+              <input
+                type="text"
+                class="question-input"
+                value="Which date would work best for you?"
+              />
+
+              <label class="checkbox-row">
+                <span>Answer</span>
+                <input type="checkbox" />
+                Allow multiple answers
+              </label>
+
+              <!-- ANSWERS -->
+              <div class="answers">
+                <div class="answer-row">
+                  <span class="label">A.</span>
+                  <input type="text" placeholder="Answer option" />
+                  <button class="trash-btn">🗑</button>
+                </div>
+
+                <div class="answer-row">
+                  <span class="label">B.</span>
+                  <input type="text" placeholder="Answer option" />
+                  <button class="trash-btn">🗑</button>
+                </div>
+              </div>
+
+              <!-- MULTIPLE ANSWERS -->
+              
+
+              <!-- ADD ANSWER -->
+              <button class="add-answer-btn"><span>+</span> Add answer</button>
+            </div>
+          </div>
+
+          <!-- RECHTS -->
+          <div class="right">
+            <button class="add-question-btn"><span>+</span> Add next question</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PUBLISH BUTTON -->
+      <div class="bottom-actions">
+        <button class="publish-btn">Publish</button>
+      </div>
+    </div>
+  </div>
+</div>
