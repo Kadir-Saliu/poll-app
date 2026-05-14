@@ -114,11 +114,11 @@
   }
 }
 
-.form-row{
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
+.form-row {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 .form-row > .form-group {
@@ -249,4 +249,27 @@
   margin-top: 40px;
   display: flex;
   justify-content: flex-end;
+}
+
+.answer-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
 }

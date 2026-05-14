@@ -1,123 +1,210 @@
 <div class="content-wrapper">
   <div class="content">
     <div class="create-container">
-      <!-- TOP BAR -->
-      <!-- DRAFT ALLEINE -->
-      <span class="status draft">Draft</span>
+      <form [formGroup]="surveyForm">
+        <!-- STATUS + HEADER -->
+        <span class="status draft">Draft</span>
 
-      <!-- CONTAINER FÜR TITLE + CANCEL -->
-      <div class="top-right">
-        <h2>Create new survey</h2>
-        <button class="cancel-btn" [routerLink]="['/']">Cancel</button>
-      </div>
+        <div class="top-right">
+          <h2>Create new survey</h2>
+          <button class="cancel-btn" [routerLink]="['/']">Cancel</button>
+        </div>
 
-      <!-- MAIN SECTION -->
-      <section class="main-section">
-        <!-- OBERER CONTAINER -->
-        <div class="upper-container">
-          <!-- LINKS -->
-          <div class="left">
-            <!-- SURVEY NAME -->
-            <div class="form-group">
-              <label>Survey name</label>
-              <div class="input-row">
-                <input type="text" placeholder="Enter survey name" />
-                <button class="trash-btn">🗑</button>
+        <!-- MAIN SECTION -->
+        <section class="main-section">
+          <!-- OBERER CONTAINER -->
+          <div class="upper-container">
+            <!-- LEFT -->
+            <div class="left">
+              <!-- SURVEY NAME -->
+              <!-- SURVEY NAME -->
+              <div class="form-group">
+                <label>Survey name</label>
+
+                <div class="input-wrapper">
+                  <div class="input-row">
+                    <input type="text" placeholder="Enter survey name" formControlName="name" />
+                    <button class="trash-btn">🗑</button>
+                  </div>
+
+                  <!-- ERROR -->
+                  <div
+                    class="error"
+                    *ngIf="
+                      surveyForm.get('name')?.invalid &&
+                      (surveyForm.get('name')?.touched || surveyForm.get('name')?.dirty)
+                    "
+                  >
+                    Survey name cannot be empty
+                  </div>
+                </div>
+              </div>
+
+              <!-- END DATE + CATEGORY -->
+              <div class="form-row">
+                <!-- END DATE -->
+                <div class="form-group">
+                  <label>Set end date (optional)</label>
+                  <div class="input-row">
+                    <input type="date" formControlName="endDate" />
+                    <button class="trash-btn">🗑</button>
+                  </div>
+                </div>
+
+                <!-- CATEGORY -->
+                <div class="form-group">
+                  <select formControlName="category">
+                    <option value="">Choose category</option>
+                    <option>Team activities</option>
+                    <option>Workplace</option>
+                    <option>Event planning</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <!-- END DATE + CATEGORY -->
-            <div class="form-row">
-              <!-- END DATE -->
+            <!-- RIGHT -->
+            <div class="right">
               <div class="form-group">
-                <label>Set end date (optional)</label>
+                <label>Describing text (optional)</label>
                 <div class="input-row">
-                  <input type="date" />
+                  <textarea
+                    placeholder="Add additional context"
+                    formControlName="description"
+                  ></textarea>
                   <button class="trash-btn">🗑</button>
                 </div>
               </div>
-
-              <!-- CATEGORY (kein input-row!) -->
-              <div class="form-group">
-                <select>
-                  <option value="">Choose category</option>
-                  <option>Team activities</option>
-                  <option>Workplace</option>
-                  <option>Event planning</option>
-                </select>
-              </div>
             </div>
           </div>
 
-          <!-- RECHTS -->
-          <div class="right">
-            <div class="form-group">
-              <label>Describing text (optional)</label>
-              <div class="input-row">
-                <textarea placeholder="Add additional context"></textarea>
-                <button class="trash-btn">🗑</button>
-              </div>
+          <!-- UNTERER CONTAINER -->
+          <div class="lower-container">
+            <!-- LEFT COLUMN -->
+            <div class="left">
+              <!-- ALLE FRAGEN, DIE LINKS STEHEN (i % 2 === 0) -->
+              <ng-container *ngFor="let q of questions.controls; let i = index">
+                <ng-container *ngIf="i % 2 === 0">
+                  <div class="question-block" [formGroup]="q">
+                    <div class="question-header">
+                      <h2>{{ i + 1 }}. Question</h2>
+                      <button class="trash-btn" (click)="removeQuestion(i)">🗑</button>
+                    </div>
+
+                    <input type="text" class="question-input" formControlName="text" />
+
+                    <!-- ERROR -->
+                    <div class="error" *ngIf="q.get('text')?.invalid && q.get('text')?.touched">
+                      Question cannot be empty
+                    </div>
+
+                    <label class="checkbox-row">
+                      <input type="checkbox" formControlName="allowMultiple" />
+                      Allow multiple answers
+                    </label>
+
+                    <div class="answers">
+                      <div
+                        class="answer-row"
+                        *ngFor="let a of getAnswers(q).controls; let j = index"
+                        [formGroup]="a"
+                      >
+                        <span class="label">{{ toLetter(j) }}.</span>
+
+                        <input type="text" formControlName="text" />
+
+                        <!-- ERROR -->
+                        <div class="error" *ngIf="a.get('text')?.invalid && a.get('text')?.touched">
+                          Answer cannot be empty
+                        </div>
+
+                        <button class="trash-btn" (click)="removeAnswer(i, j)">🗑</button>
+                      </div>
+                    </div>
+
+                    <button class="add-answer-btn" (click)="addAnswer(i)">
+                      <span>+</span> Add answer
+                    </button>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <!-- BUTTON WENN NÄCHSTE FRAGE LINKS KOMMT -->
+              <button
+                class="add-question-btn"
+                *ngIf="questions.length % 2 === 0"
+                (click)="addQuestion()"
+              >
+                <span>+</span> Add next question
+              </button>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="right">
+              <!-- ALLE FRAGEN, DIE RECHTS STEHEN (i % 2 === 1) -->
+              <ng-container *ngFor="let q of questions.controls; let i = index">
+                <ng-container *ngIf="i % 2 === 1">
+                  <div class="question-block" [formGroup]="q">
+                    <div class="question-header">
+                      <h2>{{ i + 1 }}. Question</h2>
+                      <button class="trash-btn" (click)="removeQuestion(i)">🗑</button>
+                    </div>
+
+                    <input type="text" class="question-input" formControlName="text" />
+
+                    <!-- ERROR -->
+                    <div class="error" *ngIf="q.get('text')?.invalid && q.get('text')?.touched">
+                      Question cannot be empty
+                    </div>
+
+                    <label class="checkbox-row">
+                      <input type="checkbox" formControlName="allowMultiple" />
+                      Allow multiple answers
+                    </label>
+
+                    <div class="answers">
+                      <div
+                        class="answer-row"
+                        *ngFor="let a of getAnswers(q).controls; let j = index"
+                        [formGroup]="a"
+                      >
+                        <span class="label">{{ toLetter(j) }}.</span>
+
+                        <input type="text" formControlName="text" />
+
+                        <!-- ERROR -->
+                        <div class="error" *ngIf="a.get('text')?.invalid && a.get('text')?.touched">
+                          Answer cannot be empty
+                        </div>
+
+                        <button class="trash-btn" (click)="removeAnswer(i, j)">🗑</button>
+                      </div>
+                    </div>
+
+                    <button class="add-answer-btn" (click)="addAnswer(i)">
+                      <span>+</span> Add answer
+                    </button>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <!-- BUTTON WENN NÄCHSTE FRAGE RECHTS KOMMT -->
+              <button
+                class="add-question-btn"
+                *ngIf="questions.length % 2 === 1"
+                (click)="addQuestion()"
+              >
+                <span>+</span> Add next question
+              </button>
             </div>
           </div>
+        </section>
+
+        <!-- PUBLISH BUTTON -->
+        <div class="bottom-actions">
+          <button class="publish-btn">Publish</button>
         </div>
-
-        <!-- UNTERER CONTAINER -->
-        <div class="lower-container">
-          <!-- LINKS -->
-          <div class="left">
-            <!-- QUESTION BLOCK -->
-            <div class="question-block">
-              <div class="question-header">
-                <h2>1. Question</h2>
-                <button class="trash-btn">🗑</button>
-              </div>
-
-              <input
-                type="text"
-                class="question-input"
-                value="Which date would work best for you?"
-              />
-
-              <label class="checkbox-row">
-                <span>Answer</span>
-                <input type="checkbox" />
-                Allow multiple answers
-              </label>
-
-              <!-- ANSWERS -->
-              <div class="answers">
-                <div class="answer-row">
-                  <span class="label">A.</span>
-                  <input type="text" placeholder="Answer option" />
-                  <button class="trash-btn">🗑</button>
-                </div>
-
-                <div class="answer-row">
-                  <span class="label">B.</span>
-                  <input type="text" placeholder="Answer option" />
-                  <button class="trash-btn">🗑</button>
-                </div>
-              </div>
-
-              <!-- MULTIPLE ANSWERS -->
-              
-
-              <!-- ADD ANSWER -->
-              <button class="add-answer-btn"><span>+</span> Add answer</button>
-            </div>
-          </div>
-
-          <!-- RECHTS -->
-          <div class="right">
-            <button class="add-question-btn"><span>+</span> Add next question</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- PUBLISH BUTTON -->
-      <div class="bottom-actions">
-        <button class="publish-btn">Publish</button>
-      </div>
+      </form>
     </div>
   </div>
 </div>
