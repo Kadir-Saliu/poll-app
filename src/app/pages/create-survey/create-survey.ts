@@ -23,7 +23,7 @@ export class CreateSurvey {
 
   constructor(private fb: FormBuilder) {
     this.surveyForm = this.fb.group({
-      name: ['',Validators.required],
+      name: ['', Validators.required],
       endDate: [''],
       category: [''],
       description: [''],
@@ -34,6 +34,19 @@ export class CreateSurvey {
     this.addQuestion(); // Frage 1
     this.addAnswer(0); // Antwort A
     this.addAnswer(0); // Antwort B
+  }
+
+  dropdownOpen = false;
+  selectedCategory: string | null = null;
+
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  selectCategory(cat: string) {
+    this.selectedCategory = cat;
+    this.surveyForm.get('category')?.setValue(cat);
+    this.dropdownOpen = false;
   }
 
   // QUESTIONS AS FORMARRAY<FORMGROUP>

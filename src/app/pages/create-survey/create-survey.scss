@@ -20,44 +20,53 @@
   padding: 40px;
   border-top-right-radius: 28px;
   color: white;
-}
-
-/* TOP BAR */
-.top-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 24px;
 }
 
+/* TOP-BEREICH: STATUS + HEADER */
 .status.draft {
-  background: #ffe1d6;
-  color: #7a3e2f;
+  display: inline-block;
+  background: rgb(255, 207, 161);
+  color: rgb(34, 18, 39);
   padding: 6px 14px;
-  border-radius: 10px;
+  border-top-right-radius: 20px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
 }
 
 .top-right {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
 
   h2 {
     margin: 0;
-    font-size: 22px;
+    color: rgb(238, 146, 54);
+    font-size: 24px;
     font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 }
 
 .cancel-btn {
-  background: transparent;
-  border: 1px solid #fff;
-  padding: 8px 16px;
+  background-color: rgb(113, 82, 74);
+  padding: 8px 18px;
+  border: none;
   border-radius: 8px;
   color: white;
   cursor: pointer;
   transition: 0.2s;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 
   &:hover {
     opacity: 0.7;
@@ -69,7 +78,7 @@
   background: rgb(67, 51, 74);
   padding: 32px;
   border-top-right-radius: 24px;
-  margin-top: 32px;
+  margin-top: 8px;
 }
 
 /* OBERER CONTAINER */
@@ -111,6 +120,7 @@
     margin-bottom: 8px;
     font-size: 15px;
     font-weight: 600;
+    line-height: 1.3;
   }
 }
 
@@ -118,7 +128,8 @@
   display: flex;
   width: 100%;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  gap: 24px;
 }
 
 .form-row > .form-group {
@@ -140,6 +151,7 @@
     border-radius: 0;
     border-top-right-radius: 12px;
     font-size: 15px;
+    line-height: 1.3;
     box-sizing: border-box;
   }
 
@@ -155,6 +167,9 @@
   font-size: 20px;
   cursor: pointer;
   color: #ffbfae;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     opacity: 0.7;
@@ -171,10 +186,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 
   h2 {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 }
 
@@ -186,6 +205,7 @@
   border-top-right-radius: 12px;
   border: none;
   font-size: 15px;
+  line-height: 1.3;
   box-sizing: border-box;
 }
 
@@ -203,6 +223,8 @@
   .label {
     width: 20px;
     font-weight: 700;
+    font-size: 14px;
+    text-align: center;
   }
 
   input {
@@ -212,6 +234,8 @@
     border-top-right-radius: 12px;
     border: none;
     box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.3;
   }
 }
 
@@ -220,29 +244,121 @@
   align-items: center;
   gap: 10px;
   margin: 16px 0;
+  font-size: 14px;
+
+  input {
+    width: 16px;
+    height: 16px;
+  }
 }
 
-/* BUTTONS */
-.add-answer-btn,
-.add-question-btn,
-.publish-btn {
-  background: rgb(255, 207, 161);
-  color: rgb(53, 39, 58);
-  padding: 12px 20px;
+/* BUTTONS – KONSISTENT */
+.add-question-btn {
+  background-color: rgb(113, 82, 74);
+  color: white;
+  padding: 10px 20px;
   border-radius: 8px;
   font-weight: 700;
+  font-size: 14px;
   border: none;
   cursor: pointer;
   transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  white-space: nowrap;
 
   span {
-    font-size: 20px;
-    margin-right: 6px;
+    font-size: 18px;
+    margin-right: 2px;
+  }
+
+  svg {
+    flex-shrink: 0;
   }
 
   &:hover {
     opacity: 0.85;
   }
+}
+
+.add-answer-btn {
+  background: transparent;
+  color: white;
+  border: none;
+  text-decoration: underline 1px solid;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+  white-space: nowrap;
+
+  span {
+    font-size: 18px;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.publish-btn {
+  background: rgb(255, 207, 161);
+  color: rgb(53, 39, 58);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  white-space: nowrap;
+
+  span {
+    font-size: 18px;
+    margin-right: 2px;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.publish-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* SELECT / DROPDOWN */
+select option.placeholder-option {
+  color: white;
+  font-style: italic;
+  background-color: rgb(67, 51, 74);
+}
+
+select:invalid {
+  background: rgb(67, 51, 74);
+  color: white;
+  font-style: italic;
+  border: none;
 }
 
 .bottom-actions {
@@ -257,12 +373,6 @@
   width: 100%;
 }
 
-.error {
-  color: #e74c3c;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
 .input-wrapper {
   display: flex;
   flex-direction: column;
@@ -274,7 +384,65 @@
   margin-top: 4px;
 }
 
-.publish-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* CATEGORY DROPDOWN */
+.category-dropdown {
+  position: relative;
+  background: rgb(67, 51, 74);
+  padding: 16px;
+  border-radius: 12px;
+
+  .label-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    cursor: pointer;
+    gap: 10px;
+
+    .arrow {
+      color: white;
+      transition: 0.2s ease;
+      align-self: flex-start;
+    }
+
+    &:hover .arrow {
+      color: rgb(255, 207, 161);
+    }
+
+    .arrow.open {
+      transform: rotate(180deg);
+      color: rgb(255, 207, 161);
+    }
+  }
+
+  .selected-value {
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: rgb(255, 207, 161);
+  }
+
+  .dropdown-list {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: white;
+    color: rgb(34, 18, 39);
+    border-radius: 12px;
+    padding: 12px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 20;
+    list-style: none;
+
+    li {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+
+      &:hover {
+        background: rgb(255, 207, 161);
+        color: rgb(34, 18, 39);
+      }
+    }
+  }
 }
