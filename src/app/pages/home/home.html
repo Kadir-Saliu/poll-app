@@ -19,7 +19,7 @@
             opinions, engage your audience, and turn feedback into action.
           </p>
 
-          <button class="primary-btn" [routerLink]="['/create']" >
+          <button class="primary-btn" [routerLink]="['/create']">
             <span>New survey</span>
             <img src="/assets/icons/plus.svg" alt="Plus Icon" class="plus-icon" />
           </button>
@@ -38,22 +38,10 @@
         <p class="subtitle">Ending soon surveys</p>
 
         <div class="cards">
-          <div class="card">
-            <span class="category">Team activities</span>
-            <h3 class="title">Weekly feedback round</h3>
-            <button class="ends">Ends in 2 days</button>
-          </div>
-
-          <div class="card">
-            <span class="category">Team activities</span>
-            <h3 class="title">Sprint retrospective</h3>
-            <button class="ends">Ends tomorrow</button>
-          </div>
-
-          <div class="card">
-            <span class="category">Team activities</span>
-            <h3 class="title">Team mood check</h3>
-            <button class="ends">Ends today</button>
+          <div class="card" *ngFor="let s of surveys" [routerLink]="['/single', s.id]">
+            <span class="category">{{ s.category }}</span>
+            <h3 class="title">{{ s.name }}</h3>
+            <button class="ends">Ends in {{ s.endsIn }}</button>
           </div>
         </div>
       </div>
