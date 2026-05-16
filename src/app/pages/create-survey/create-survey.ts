@@ -126,7 +126,7 @@ export class CreateSurvey {
       .insert({
         name,
         description,
-        category,
+        category:this.selectedCategory,
         end_date: endDate || null,
         status: 'published',
       })
