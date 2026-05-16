@@ -84,19 +84,32 @@
       <div class="results-container">
         <h2 class="results-title">Survey results LIVE</h2>
 
-        <div class="result-block" *ngFor="let q of survey.questions; let i = index">
-          <h3 class="result-question">{{ i + 1 }}. {{ q.text }}</h3>
+        <!-- FALL 1: Es gibt Ergebnisse -->
+        <ng-container *ngIf="hasVotes(); else noResults">
+          <div class="result-block" *ngFor="let q of survey.questions; let i = index">
+            <h3 class="result-question">{{ i + 1 }}. {{ q.text }}</h3>
 
-          <div class="result-row" *ngFor="let a of q.answers; let j = index">
-            <span class="label">{{ toLetter(j) }}</span>
+            <div class="result-row" *ngFor="let a of q.answers; let j = index">
+              <span class="label">{{ toLetter(j) }}</span>
 
-            <div class="bar-wrapper">
-              <div class="bar" [style.width.%]="a.percentage"></div>
+              <div class="bar-wrapper">
+                <div class="bar" [style.width.%]="a.percentage"></div>
+              </div>
+
+              <span class="percentage">{{ a.percentage }}%</span>
             </div>
-
-            <span class="percentage">{{ a.percentage }}%</span>
           </div>
-        </div>
+        </ng-container>
+
+        <!-- FALL 2: Keine Ergebnisse -->
+        <ng-template #noResults>
+          <div class="no-results">
+            <p class="no-results-title">
+              Results will be shown here after participants complete the survey.
+            </p>
+            <p class="no-results-sub">There are no answers yet.</p>
+          </div>
+        </ng-template>
       </div>
     </div>
     <!-- single-container -->

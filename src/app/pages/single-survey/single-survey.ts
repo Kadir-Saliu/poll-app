@@ -61,6 +61,10 @@ export class SingleSurvey {
     ],
   };
 
+  hasVotes(): boolean {
+    return this.survey.questions.some((q) => q.answers.some((a) => a.percentage > 0));
+  }
+
   toLetter(i: number) {
     return String.fromCharCode(65 + i);
   }
