@@ -1,8 +1,9 @@
-<div class="single-survey-wrapper">
+<div *ngIf="!loading" class="single-survey-wrapper">
   <!-- HEADER -->
   <div class="header">
     <div class="top-row">
-      <svg [routerLink]="['']"
+      <svg
+        [routerLink]="['']"
         width="119"
         height="50"
         viewBox="0 0 119 50"
@@ -31,88 +32,84 @@
     </div>
   </div>
 
-  <div class="single-survey-wrapper">
-    <!-- HEADER bleibt wie er ist -->
+  <!-- HEADER bleibt wie er ist -->
 
-    <!-- EIN GROSSER CONTAINER FÜR CONTENT + RESULTS -->
-    <div class="single-container">
-      <!-- 🔶 CONTENT-CONTAINER -->
-      <div class="content-container">
-        <header class="survey-header">
-          <span class="status published">Published</span>
-        </header>
-        <div class="meta">
-          <span class="end-date">Ends on: {{ survey.endDate }}</span>
-          <span class="category">Category: {{ survey.category }}</span>
-        </div>
-
-        <h1 class="title">{{ survey.name }}</h1>
-
-        <p class="description">
-          {{ survey.description }}
-        </p>
-
-        <!-- QUESTIONS IN 2 SPALTEN -->
-        <div class="questions-grid">
-          <div class="question-block" *ngFor="let q of survey.questions; let i = index">
-            <h2 class="question-title">{{ i + 1 }}. {{ q.text }}</h2>
-
-            <p class="hint">
-              {{ q.allowMultiple ? 'More than one answer is possible' : 'Choose one answer' }}
-            </p>
-
-            <div class="answers">
-              <label class="answer-row" *ngFor="let a of q.answers; let j = index">
-                <input
-                  [type]="q.allowMultiple ? 'checkbox' : 'radio'"
-                  [name]="'q' + i"
-                  (change)="selectAnswer(i, j)"
-                />
-
-                <span class="label">{{ toLetter(j) }}.</span>
-                <span class="text">{{ a.text }}</span>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="complete-btn-wrapper">
-          <button class="complete-btn" (click)="submitSurvey()">Complete survey</button>
-        </div>
+  <!-- EIN GROSSER CONTAINER FÜR CONTENT + RESULTS -->
+  <div class="single-container">
+    <!-- 🔶 CONTENT-CONTAINER -->
+    <div class="content-container">
+      <header class="survey-header">
+        <span class="status published">Published</span>
+      </header>
+      <div class="meta">
+        <span class="end-date">Ends on: {{ survey?.end_date }}</span>
+        <span class="category">Category: {{ survey?.category }}</span>
       </div>
 
-      <!-- 🔷 RESULT-CONTAINER -->
-      <div class="results-container">
-        <h2 class="results-title">Survey results LIVE</h2>
+      <h1 class="title">{{ survey?.name }}</h1>
 
-        <!-- FALL 1: Es gibt Ergebnisse -->
-        <ng-container *ngIf="hasVotes(); else noResults">
-          <div class="result-block" *ngFor="let q of survey.questions; let i = index">
-            <h3 class="result-question">{{ i + 1 }}. {{ q.text }}</h3>
+      <p class="description">
+        {{ survey?.description }}
+      </p>
 
-            <div class="result-row" *ngFor="let a of q.answers; let j = index">
-              <span class="label">{{ toLetter(j) }}</span>
+      <!-- QUESTIONS IN 2 SPALTEN -->
+      <div class="questions-grid" *ngIf="survey?.questions?.length">
+        <div class="question-block" *ngFor="let q of survey?.questions || []; let i = index">
+          <h2 class="question-title">{{ i + 1 }}. {{ q.text }}</h2>
 
-              <div class="bar-wrapper">
-                <div class="bar" [style.width.%]="a.percentage"></div>
-              </div>
+          <p class="hint">
+            {{ q.allow_multiple ? 'More than one answer is possible' : 'Choose one answer' }}
+          </p>
 
-              <span class="percentage">{{ a.percentage }}%</span>
-            </div>
+          <div class="answers">
+            <label class="answer-row" *ngFor="let a of q.answers || []; let j = index">
+              <input
+                [type]="q.allow_multiple ? 'checkbox' : 'radio'"
+                [name]="'q' + i"
+                (change)="selectAnswer(i, j)"
+              />
+
+              <span class="label">{{ toLetter(j) }}.</span>
+              <span class="text">{{ a.text }}</span>
+            </label>
           </div>
-        </ng-container>
-
-        <!-- FALL 2: Keine Ergebnisse -->
-        <ng-template #noResults>
-          <div class="no-results">
-            <p class="no-results-title">
-              Results will be shown here after participants complete the survey.
-            </p>
-            <p class="no-results-sub">There are no answers yet.</p>
-          </div>
-        </ng-template>
+        </div>
+      </div>
+      <div class="complete-btn-wrapper">
+        <button class="complete-btn" (click)="submitSurvey()">Complete survey</button>
       </div>
     </div>
-    <!-- single-container -->
+
+    <!-- 🔷 RESULT-CONTAINER -->
+    <div class="results-container">
+      <h2 class="results-title">Survey results LIVE</h2>
+
+      <!-- FALL 1: Es gibt Ergebnisse -->
+      <ng-container *ngIf="hasVotes(); else noResults">
+        <div class="result-block" *ngFor="let q of survey?.questions || []; let i = index">
+          <h3 class="result-question">{{ i + 1 }}. {{ q.text }}</h3>
+
+          <div class="result-row" *ngFor="let a of q.answers || []; let j = index">
+            <span class="label">{{ toLetter(j) }}</span>
+
+            <div class="bar-wrapper">
+              <div class="bar" [style.width.%]="a.percentage"></div>
+            </div>
+
+            <span class="percentage">{{ a.percentage }}%</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- FALL 2: Keine Ergebnisse -->
+      <ng-template #noResults>
+        <div class="no-results">
+          <p class="no-results-title">
+            Results will be shown here after participants complete the survey.
+          </p>
+          <p class="no-results-sub">There are no answers yet.</p>
+        </div>
+      </ng-template>
+    </div>
   </div>
-  <!-- wrapper -->
 </div>

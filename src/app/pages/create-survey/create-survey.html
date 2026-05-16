@@ -354,7 +354,14 @@
 
         <!-- PUBLISH BUTTON -->
         <div class="bottom-actions">
-          <button class="publish-btn" [disabled]="surveyForm.invalid">Publish</button>
+          <button
+            class="publish-btn"
+            [disabled]="surveyForm.invalid || questions.length === 0 || isPublishing"
+            (click)="publishSurvey()"
+          >
+            <span *ngIf="!isPublishing">Publish</span>
+            <span *ngIf="isPublishing">Publishing...</span>
+          </button>
         </div>
       </form>
     </div>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Validators } from '@angular/forms';
+import { supabase } from '../../supabaseClient';
 
 import {
   FormArray,
@@ -20,8 +21,15 @@ import { CommonModule } from '@angular/common';
 })
 export class CreateSurvey {
   surveyForm: FormGroup;
+  isPublishing = false;
 
-  constructor(private fb: FormBuilder) {
+  dropdownOpen = false;
+  selectedCategory: string | null = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+  ) {
     this.surveyForm = this.fb.group({
       name: ['', Validators.required],
       endDate: [''],
@@ -30,15 +38,13 @@ export class CreateSurvey {
       questions: this.fb.array<FormGroup>([]),
     });
 
-    // 🔥 Standardmäßig 1 Frage + 2 Antworten erzeugen
-    this.addQuestion(); // Frage 1
-    this.addAnswer(0); // Antwort A
-    this.addAnswer(0); // Antwort B
+    // Standardmäßig 1 Frage + 2 Antworten
+    this.addQuestion();
+    this.addAnswer(0);
+    this.addAnswer(0);
   }
 
-  dropdownOpen = false;
-  selectedCategory: string | null = null;
-
+  // DROPDOWN
   toggleDropdown() {
     this.dropdownOpen = !this.dropdownOpen;
   }
@@ -49,12 +55,11 @@ export class CreateSurvey {
     this.dropdownOpen = false;
   }
 
-  // QUESTIONS AS FORMARRAY<FORMGROUP>
+  // FORMARRAY GETTER
   get questions(): FormArray<FormGroup> {
     return this.surveyForm.get('questions') as FormArray<FormGroup>;
   }
 
-  // ANSWERS AS FORMARRAY<FORMGROUP>
   getAnswers(q: FormGroup): FormArray<FormGroup> {
     return q.get('answers') as FormArray<FormGroup>;
   }
@@ -63,6 +68,7 @@ export class CreateSurvey {
     return String.fromCharCode(65 + index);
   }
 
+  // FRAGEN
   addQuestion() {
     const question = this.fb.group({
       text: ['', Validators.required],
@@ -74,7 +80,7 @@ export class CreateSurvey {
 
     const index = this.questions.length - 1;
 
-    // 🔥 Abfrage: Wenn es die erste Frage ist
+    // Ab Frage 2 → automatisch 2 Antworten
     if (index > 0) {
       this.addAnswer(index);
       this.addAnswer(index);
@@ -85,14 +91,14 @@ export class CreateSurvey {
     this.questions.removeAt(index);
   }
 
+  // ANTWORTEN
   addAnswer(questionIndex: number) {
     const answers = this.getAnswers(this.questions.at(questionIndex));
 
-    // Maximal 6 Antworten
     if (answers.length >= 6) return;
 
     const answer = this.fb.group({
-      text: ['', Validators.required], // Antwort darf nicht leer sein
+      text: ['', Validators.required],
     });
 
     answers.push(answer);
@@ -101,8 +107,72 @@ export class CreateSurvey {
   removeAnswer(questionIndex: number, answerIndex: number) {
     const answers = this.getAnswers(this.questions.at(questionIndex));
 
-    if (answers.length <= 2) return; // Mindestanzahl
+    if (answers.length <= 2) return;
 
     answers.removeAt(answerIndex);
+  }
+
+  // PUBLISH
+  async publishSurvey() {
+    if (this.surveyForm.invalid || this.questions.length === 0) return;
+
+    this.isPublishing = true;
+
+    const { name, description, endDate, category } = this.surveyForm.value;
+
+    // SURVEY SPEICHERN
+    const { data: survey, error } = await supabase
+      .from('surveys')
+      .insert({
+        name,
+        description,
+        category,
+        end_date: endDate || null,
+        status: 'published',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      this.isPublishing = false;
+      return;
+    }
+
+    // FRAGEN + ANTWORTEN SPEICHERN
+    await this.saveQuestions(survey.id);
+
+    this.isPublishing = false;
+
+    // WEITERLEITUNG
+    this.router.navigate(['/single', survey.id]);
+  }
+
+  // FRAGEN + ANTWORTEN SPEICHERN
+  async saveQuestions(surveyId: number) {
+    for (let q of this.questions.controls) {
+      const text = q.get('text')?.value;
+      const allowMultiple = q.get('allowMultiple')?.value;
+
+      const { data: question } = await supabase
+        .from('questions')
+        .insert({
+          survey_id: surveyId,
+          text,
+          allow_multiple: allowMultiple,
+        })
+        .select()
+        .single();
+
+      const answerInserts = q.get('answers')!.value.map((a: any) =>
+        supabase.from('answers').insert({
+          question_id: question.id,
+          text: a.text,
+        }),
+      );
+
+      await Promise.all(answerInserts);
+      console.log(answerInserts);
+    }
   }
 }

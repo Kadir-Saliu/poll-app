@@ -18,7 +18,7 @@ export class App implements OnInit {
     console.log('🔌 Testing Supabase connection...');
 
     const { data, error } = await this.supabase.client
-      .from('polls')
+      .from('surveys')
       .select('*');
 
     if (error) {
