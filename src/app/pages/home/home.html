@@ -5,19 +5,15 @@
     </header>
 
     <main class="home-main">
-      <!-- OBERER CONTAINER -->
+      <!-- HERO BEREICH -->
       <div class="top-container">
-        <!-- LINKE SEITE -->
         <div class="left">
           <h1>
             Collect Feedback,<br />
             Unlock Ideas
           </h1>
 
-          <p>
-            Create and share surveys in minutes – from team events to workplace culture. Collect
-            opinions, engage your audience, and turn feedback into action.
-          </p>
+          <p>Create and share surveys in minutes – from team events to workplace culture.</p>
 
           <button class="primary-btn" [routerLink]="['/create']">
             <span>New survey</span>
@@ -25,25 +21,63 @@
           </button>
         </div>
 
-        <!-- RECHTE SEITE -->
         <div class="phone-wrapper">
           <img src="/assets/images/phone-mockup.svg" alt="Phone" class="default" />
           <img src="/assets/images/phone-mockup-hover.svg" alt="Phone Hover" class="hover" />
         </div>
       </div>
 
-      <!-- UNTERER CONTAINER -->
       <div class="bottom-container">
-        <h2>Your surveys</h2>
-        <p class="subtitle">Ending soon surveys</p>
+        <h2 class="main-title">Your surveys</h2>
+        <span class="highlight-title">Ending soon</span>
 
-        <div class="cards">
-          <div class="card" *ngFor="let s of surveys" [routerLink]="['/single', s.id]">
-            <span class="category">{{ s.category }}</span>
-            <h3 class="title">{{ s.name }}</h3>
-            <button class="ends">Ends in {{ s.endsIn }}</button>
+        <section class="highlight-section">
+          <div class="highlight-cards">
+            <div class="card" *ngFor="let s of soonEnding" [routerLink]="['/single', s.id]">
+              <span class="category">{{ s.category }}</span>
+              <h3 class="title">{{ s.name }}</h3>
+              <button class="ends">Ends in {{ s.endsIn }}</button>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- ⭐ SURVEY LIST (6 Cards – je Kategorie 1) -->
+        <section class="survey-list">
+          <div class="survey-tabs">
+            <div class="left-tabs">
+              <button class="tab-active">Active surveys</button>
+              <button class="tab">Past surveys</button>
+            </div>
+
+            <div class="right-tabs">
+              <button class="tab sort-tab" (click)="toggleSortDropdown()">
+                Sort by categories
+              </button>
+
+              <div class="sort-dropdown" *ngIf="sortDropdownOpen">
+                <button
+                  class="sort-option"
+                  *ngFor="let c of categories"
+                  (click)="sortByCategory(c)"
+                >
+                  {{ c }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="survey-cards">
+            <div
+              class="survey-card"
+              *ngFor="let s of categoryCards"
+              [routerLink]="['/single', s.id]"
+            >
+              <span class="category">{{ s.category }}</span>
+              <h3 class="title">{{ s.name }}</h3>
+              <button class="ends">Ends in {{ s.endsIn }}</button>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
