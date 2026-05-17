@@ -22,77 +22,47 @@ export class SingleSurvey {
 
   ngOnInit() {
     this.route.paramMap.subscribe((params) => {
-      const id = Number(params.get('id'));
-      console.log('PARAM ID CHANGED → Lade Survey', id);
+      const id = params.get('id');
+      console.log('🔄 Lade Survey mit ID', id);
       this.loadSurvey(id);
     });
   }
 
-  async loadSurvey(id: number) {
-    console.log('🟡 loadSurvey START, id =', id);
-
-    // 1) Survey laden
+  async loadSurvey(id: string | null) {
     const { data: survey, error: surveyError } = await supabase
       .from('surveys')
       .select('*')
-      .eq('id', id)
+      .eq('id', id ?? '')
       .single();
 
-    console.log('🟡 Survey geladen:', survey);
-    if (surveyError) console.error('❌ Survey Error:', surveyError);
-
-    if (!survey) {
-      console.warn('⚠️ Kein Survey gefunden!');
+    if (surveyError) {
+      console.error('❌ Fehler beim Laden des Surveys:', surveyError);
       this.loading = false;
       return;
     }
-
-    // 2) Fragen laden
-    console.log('🟡 Lade Fragen für Survey:', id);
 
     const { data: questions, error: questionsError } = await supabase
       .from('questions')
       .select('*')
       .eq('survey_id', id);
 
-    console.log('🟡 Questions geladen:', questions);
-    if (questionsError) console.error('❌ Questions Error:', questionsError);
-
-    if (!questions) {
-      console.warn('⚠️ Keine Fragen gefunden!');
+    if (questionsError) {
+      console.error('❌ Fehler beim Laden der Fragen:', questionsError);
       this.loading = false;
       return;
     }
 
-    // 3) Antworten laden
-    for (let q of questions as any[]) {
-      console.log('🟣 Lade Antworten für Frage:', q.id);
-
-      const { data: answers, error: answersError } = await supabase
-        .from('answers')
-        .select('*')
-        .eq('question_id', q.id);
-
-      console.log('🟣 Answers für Frage', q.id, ':', answers);
-      if (answersError) console.error('❌ Answers Error:', answersError);
-
+    for (const q of questions as any[]) {
+      const { data: answers } = await supabase.from('answers').select('*').eq('question_id', q.id);
       q.answers = answers;
     }
 
-    console.log('🟢 FINAL QUESTIONS:', questions);
-
-    // 4) Survey zusammenbauen
-    this.survey = {
-      ...survey,
-      questions,
-    };
-
-    console.log('🟢 this.survey gesetzt:', this.survey);
-
+    this.survey = { ...survey, questions };
     this.loading = false;
     this.cdr.detectChanges();
 
-    console.log('🟢 loading = false → Angular sollte jetzt rendern');
+    // 👇 Hier neu:
+    await this.loadResults();
   }
 
   toLetter(i: number) {
@@ -100,16 +70,63 @@ export class SingleSurvey {
   }
 
   selectAnswer(qIndex: number, aIndex: number) {
-    console.log('Selected:', qIndex, aIndex);
-  }
-
-  submitSurvey() {
-    console.log('Survey completed');
+    const question = this.survey.questions[qIndex];
+    question.answers.forEach((a: any, i: number) => (a.selected = i === aIndex));
+    console.log('✅ Antwort gewählt:', question.answers[aIndex]);
   }
 
   hasVotes(): boolean {
-    if (!this.survey || !this.survey.questions) return false;
-
+    if (!this.survey?.questions) return false;
     return this.survey.questions.some((q: any) => q.answers?.some((a: any) => a.percentage > 0));
+  }
+
+  async completeSurvey() {
+    console.log('🟢 Survey wird abgeschlossen...');
+
+    for (const q of this.survey.questions) {
+      const selected = q.answers.find((a: any) => a.selected);
+      if (!selected) continue;
+
+      const { error } = await supabase.from('votes').insert({
+        poll_id: this.survey.id,
+        question_id: q.id,
+        option_id: selected.id,
+        created_at: new Date().toISOString(),
+      });
+
+      if (error) console.error('❌ Fehler beim Speichern der Antwort:', error);
+      else console.log('✅ Antwort gespeichert für Frage', q.id);
+    }
+
+    await this.loadResults();
+  }
+
+  async loadResults() {
+    const { data: votes, error } = await supabase
+      .from('votes')
+      .select('option_id')
+      .eq('poll_id', this.survey.id);
+
+    if (error) {
+      console.error('❌ Fehler beim Laden der Ergebnisse:', error);
+      return;
+    }
+
+    const counts: Record<string, number> = {};
+    for (const v of votes) {
+      counts[v.option_id] = (counts[v.option_id] || 0) + 1;
+    }
+
+    for (const q of this.survey.questions) {
+      const totalVotes = q.answers.reduce((sum: number, a: any) => sum + (counts[a.id] || 0), 0);
+
+      for (const a of q.answers) {
+        const votesForAnswer = counts[a.id] || 0;
+        a.percentage = totalVotes > 0 ? Math.round((votesForAnswer / totalVotes) * 100) : 0;
+      }
+    }
+
+    console.log('📊 Ergebnisse aktualisiert');
+    this.cdr.detectChanges();
   }
 }

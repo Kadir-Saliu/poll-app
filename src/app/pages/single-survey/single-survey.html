@@ -28,7 +28,9 @@
         />
       </svg>
 
-      <button class="create-btn" [routerLink]="['/create']">Create Survey</button>
+      <button class="create-btn" [routerLink]="['/create']" (click)="completeSurvey()">
+        Create Survey
+      </button>
     </div>
   </div>
 
@@ -76,7 +78,7 @@
         </div>
       </div>
       <div class="complete-btn-wrapper">
-        <button class="complete-btn" (click)="submitSurvey()">Complete survey</button>
+        <button class="complete-btn" (click)="completeSurvey()">Complete survey</button>
       </div>
     </div>
 
