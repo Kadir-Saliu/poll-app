@@ -21,8 +21,7 @@
 
 .content-wrapper {
   display: flex;
-
-  justify-content: center; /* FIX: Kein Flex → kein Layout-Bug */
+  justify-content: center;
   width: 100%;
 }
 
@@ -166,14 +165,14 @@
   align-items: center;
   width: 100%;
 
+ 
+
   .main-title {
     color: rgb(255, 183, 112);
     align-self: center;
     font-size: 48px;
     font-weight: 700;
   }
-
-  
 
   .highlight-title {
     color: white;
@@ -187,7 +186,6 @@
     padding-top: 20px;
     width: 100%;
     flex-wrap: wrap;
-   
   }
 
   .card {
@@ -203,6 +201,10 @@
     min-height: 300px;
     gap: 20px;
     cursor: pointer;
+
+    &:hover {
+      background-color: rgb(244, 233, 251);
+    }
 
     .category {
       font-size: 14px;
@@ -232,35 +234,52 @@
 .survey-list {
   display: flex;
   flex-direction: column;
-  padding-top: 50px;
   width: 100%;
+  max-width: 1200px;
+  padding-top: 50px;
+
+  /* feste Höhe wie im Figma */
+  height: 600px;
+  overflow-y: auto;
+  position: relative; // wichtig für das Dropdown
+  z-index: 1; // damit die Cards über dem Hintergrund bleiben
 }
 
 .survey-tabs {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .left-tabs {
   display: flex;
   gap: 20px;
 
+  .tab,
   .tab-active {
-    background-color: rgb(255, 183, 112);
     font-size: 16px;
     font-weight: 600;
     border-radius: 50px;
-    padding: 5px;
+    padding: 8px 20px;
     cursor: pointer;
+    border: none;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .tab {
     background-color: rgb(254, 233, 212);
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 50px;
-    padding: 5px;
-    cursor: pointer;
+    color: rgb(53, 39, 58);
+
+    &:hover {
+      background-color: rgb(255, 220, 190);
+    }
+  }
+
+  .tab-active {
+    background-color: rgb(255, 183, 112);
+    color: rgb(53, 39, 58);
   }
 }
 
@@ -268,7 +287,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  padding-top: 30px;
+  width: 100%;
+  padding-top: 20px;
 
   .survey-card {
     display: flex;
@@ -279,6 +299,11 @@
     gap: 12px;
     border-top-right-radius: 50px;
     cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+    }
 
     .category {
       color: rgb(255, 207, 161);
@@ -309,13 +334,16 @@
 
   .sort-tab {
     background-color: rgb(254, 233, 212);
+    color: rgb(53, 39, 58);
     font-size: 16px;
-    font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 8px;
+    font-weight: 600;
+    border-radius: 50px; // gleiche Rundung wie links
+    padding: 8px 20px;
     border: none;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
 
     &:hover {
       background-color: rgb(255, 220, 190);
@@ -352,4 +380,14 @@
   }
 }
 
-
+.no-surveys {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  color: #f0f0f0;
+  font-size: 1.1rem;
+  margin-top: 2rem;
+  opacity: 0.8;
+  text-align: center;
+}

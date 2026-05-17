@@ -18,6 +18,10 @@ export class Home {
   sortDropdownOpen = false;
   loading = true;
 
+  activeSurveys: any[] = [];
+  pastSurveys: any[] = [];
+  activeTab: 'active' | 'past' = 'active';
+
   categories = [
     'Team Activities',
     'Health & Wellness',
@@ -102,9 +106,25 @@ export class Home {
     if (!this.surveys || this.surveys.length === 0) {
       this.soonEnding = [];
       this.categoryCards = [];
+      this.activeSurveys = [];
+      this.pastSurveys = [];
       return;
     }
+
     this.soonEnding = this.getEndingSoonByCategory();
+
+    const today = new Date();
+
+    this.activeSurveys = this.surveys.filter((s) => {
+      const end = new Date(s.end_date);
+      return end.getTime() >= today.getTime();
+    });
+
+    this.pastSurveys = this.surveys.filter((s) => {
+      const end = new Date(s.end_date);
+      return end.getTime() < today.getTime();
+    });
+
     const byCategory = new Map<string, any>();
     for (const s of this.surveys) {
       const cat = s.category ?? 'Uncategorized';
@@ -122,8 +142,28 @@ export class Home {
       this.prepareHomeLists();
       return;
     }
-    this.categoryCards = this.surveys.filter((s) => (s.category ?? 'Uncategorized') === category);
+
+    const today = new Date();
+
+    if (this.activeTab === 'active') {
+      this.activeSurveys = this.surveys.filter(
+        (s) =>
+          (s.category ?? 'Uncategorized') === category &&
+          new Date(s.end_date).getTime() >= today.getTime(),
+      );
+    } else {
+      this.pastSurveys = this.surveys.filter(
+        (s) =>
+          (s.category ?? 'Uncategorized') === category &&
+          new Date(s.end_date).getTime() < today.getTime(),
+      );
+    }
+
     this.sortDropdownOpen = false;
     setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
+  }
+
+  toggleTab(tab: 'active' | 'past') {
+    this.activeTab = tab;
   }
 }
