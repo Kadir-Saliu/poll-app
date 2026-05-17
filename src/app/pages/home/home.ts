@@ -111,26 +111,26 @@ export class Home {
       return;
     }
 
-    this.soonEnding = this.getEndingSoonByCategory();
+    // Nur Surveys mit gültigem Enddatum oben anzeigen
+    this.soonEnding = this.getEndingSoonByCategory().filter((s) => s.endsIn !== 'Unknown');
 
     const today = new Date();
 
+    // 🔧 Surveys ohne Enddatum gelten als "active"
     this.activeSurveys = this.surveys.filter((s) => {
+      if (!s.end_date) return true; // kein Datum → immer aktiv
       const end = new Date(s.end_date);
       return end.getTime() >= today.getTime();
     });
 
     this.pastSurveys = this.surveys.filter((s) => {
+      if (!s.end_date) return false; // kein Datum → nie "past"
       const end = new Date(s.end_date);
       return end.getTime() < today.getTime();
     });
 
-    const byCategory = new Map<string, any>();
-    for (const s of this.surveys) {
-      const cat = s.category ?? 'Uncategorized';
-      if (!byCategory.has(cat)) byCategory.set(cat, s);
-    }
-    this.categoryCards = Array.from(byCategory.values());
+    // 🔧 Unten alle Surveys anzeigen
+    this.categoryCards = [...this.surveys];
   }
 
   toggleSortDropdown() {

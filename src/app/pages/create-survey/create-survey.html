@@ -368,6 +368,7 @@
             <span *ngIf="!isPublishing">Publish</span>
             <span *ngIf="isPublishing">Publishing...</span>
           </button>
+          <div class="publish-toast" *ngIf="toastVisible">Your survey is now published</div>
         </div>
       </form>
     </div>

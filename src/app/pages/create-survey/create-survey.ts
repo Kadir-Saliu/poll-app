@@ -120,13 +120,12 @@ export class CreateSurvey {
 
     const { name, description, endDate, category } = this.surveyForm.value;
 
-    // SURVEY SPEICHERN
     const { data: survey, error } = await supabase
       .from('surveys')
       .insert({
         name,
         description,
-        category:this.selectedCategory,
+        category: this.selectedCategory,
         end_date: endDate || null,
         status: 'published',
       })
@@ -139,13 +138,22 @@ export class CreateSurvey {
       return;
     }
 
-    // FRAGEN + ANTWORTEN SPEICHERN
     await this.saveQuestions(survey.id);
-
     this.isPublishing = false;
 
-    // WEITERLEITUNG
-    this.router.navigate(['/single', survey.id]);
+    // ✅ Toast anzeigen
+    this.showToast('Your survey is now published');
+
+    setTimeout(() => {
+      this.router.navigate(['/single', survey.id]);
+    }, 2200);
+  }
+
+  toastVisible = false;
+
+  showToast(message: string) {
+    this.toastVisible = true;
+    setTimeout(() => (this.toastVisible = false), 2000);
   }
 
   // FRAGEN + ANTWORTEN SPEICHERN

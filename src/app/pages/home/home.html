@@ -112,7 +112,9 @@
                   >
                     <span class="category">{{ s.category }}</span>
                     <h3 class="title">{{ s.name }}</h3>
-                    <button class="ends">Ended</button>
+                    <button class="ends" *ngIf="s.endsIn !== 'Unknown'">
+                      Ends in {{ s.endsIn }}
+                    </button>
                   </div>
                 </div>
               </div>
