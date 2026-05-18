@@ -2,7 +2,13 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { supabase } from '../../supabaseClient';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { calculateEndsIn } from '../../core/utils/date-utils';
+import {
+  getEndingSoonByCategory,
+  prepareHomeLists,
+  sortByCategory,
+} from '../../core/utils/survey-utils';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +23,6 @@ export class Home {
   categoryCards: any[] = [];
   sortDropdownOpen = false;
   loading = true;
-
   activeSurveys: any[] = [];
   pastSurveys: any[] = [];
   activeTab: 'active' | 'past' = 'active';
@@ -31,7 +36,10 @@ export class Home {
     'Technology & Innovation',
   ];
 
-  constructor(private cd: ChangeDetectorRef) {}
+  constructor(
+    private cd: ChangeDetectorRef,
+    private supabaseService: SupabaseService,
+  ) {}
 
   async ngOnInit() {
     try {
@@ -49,7 +57,7 @@ export class Home {
 
   async loadSurveys() {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await this.supabaseService.client
         .from('surveys')
         .select('*')
         .order('end_date', { ascending: true });
@@ -59,111 +67,42 @@ export class Home {
       this.surveys = Array.isArray(data)
         ? data.map((s) => ({
             ...s,
-            id: s.id ?? s.uuid ?? s._id ?? String(Math.random()).slice(2),
-            name: s.name ?? s.title ?? 'Untitled survey',
+            id: s.id ?? String(Math.random()).slice(2),
+            name: s.name ?? 'Untitled survey',
             category: s.category ?? 'Uncategorized',
-            end_date: s.end_date ?? s.endsAt ?? null,
-            endsIn: s.end_date ? this.calculateEndsIn(s.end_date) : 'Unknown',
+            end_date: s.end_date ?? null,
+            endsIn: s.end_date ? calculateEndsIn(s.end_date) : 'Unknown',
           }))
         : [];
 
-      this.prepareHomeLists();
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 1);
+        console.log('Surveys loaded:', this.surveys);
+
+
+      const lists = prepareHomeLists(this.surveys);
+      this.soonEnding = lists.soonEnding;
+      this.activeSurveys = lists.activeSurveys;
+      this.pastSurveys = lists.pastSurveys;
+      this.categoryCards = lists.categoryCards;
+
+      this.cd.detectChanges();
     } catch (err) {
       console.error(err);
     }
-    this.cd.detectChanges();
   }
 
-  calculateEndsIn(endDate: string) {
-    const today = new Date();
-    const end = new Date(endDate);
-    const diff = end.getTime() - today.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    if (isNaN(days)) return 'Unknown';
-    if (days <= 0) return 'Ended';
-    if (days === 1) return '1 day';
-    return `${days} days`;
-  }
-
-  getEndingSoonByCategory() {
-    const map = new Map<string, any>();
-    for (const s of this.surveys) {
-      const cat = s.category ?? 'Uncategorized';
-      if (!map.has(cat)) {
-        map.set(cat, s);
-        continue;
-      }
-      const existing = map.get(cat);
-      const sEnd = s.end_date ? new Date(s.end_date).getTime() : Infinity;
-      const eEnd = existing.end_date ? new Date(existing.end_date).getTime() : Infinity;
-      if (sEnd < eEnd) map.set(cat, s);
-    }
-    return Array.from(map.values());
-  }
-
-  prepareHomeLists() {
-    if (!this.surveys || this.surveys.length === 0) {
-      this.soonEnding = [];
-      this.categoryCards = [];
-      this.activeSurveys = [];
-      this.pastSurveys = [];
-      return;
-    }
-
-    // Nur Surveys mit gültigem Enddatum oben anzeigen
-    this.soonEnding = this.getEndingSoonByCategory().filter((s) => s.endsIn !== 'Unknown');
-
-    const today = new Date();
-
-    // 🔧 Surveys ohne Enddatum gelten als "active"
-    this.activeSurveys = this.surveys.filter((s) => {
-      if (!s.end_date) return true; // kein Datum → immer aktiv
-      const end = new Date(s.end_date);
-      return end.getTime() >= today.getTime();
-    });
-
-    this.pastSurveys = this.surveys.filter((s) => {
-      if (!s.end_date) return false; // kein Datum → nie "past"
-      const end = new Date(s.end_date);
-      return end.getTime() < today.getTime();
-    });
-
-    // 🔧 Unten alle Surveys anzeigen
-    this.categoryCards = [...this.surveys];
-  }
-
-  toggleSortDropdown() {
+  toggleSortDropdown(): void {
     this.sortDropdownOpen = !this.sortDropdownOpen;
   }
 
-  sortByCategory(category: string) {
-    if (!category) {
-      this.prepareHomeLists();
-      return;
-    }
-
-    const today = new Date();
-
-    if (this.activeTab === 'active') {
-      this.activeSurveys = this.surveys.filter(
-        (s) =>
-          (s.category ?? 'Uncategorized') === category &&
-          new Date(s.end_date).getTime() >= today.getTime(),
-      );
-    } else {
-      this.pastSurveys = this.surveys.filter(
-        (s) =>
-          (s.category ?? 'Uncategorized') === category &&
-          new Date(s.end_date).getTime() < today.getTime(),
-      );
-    }
-
+  sortByCategory(category: string): void {
+    const sorted = sortByCategory(this.surveys, category, this.activeTab);
+    this.activeSurveys = sorted.activeSurveys;
+    this.pastSurveys = sorted.pastSurveys;
     this.sortDropdownOpen = false;
     setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   }
 
-  toggleTab(tab: 'active' | 'past') {
+  toggleTab(tab: 'active' | 'past'): void {
     this.activeTab = tab;
   }
 }

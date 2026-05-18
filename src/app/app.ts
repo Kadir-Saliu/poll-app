@@ -15,7 +15,7 @@ export class App implements OnInit {
   constructor(private supabase: SupabaseService) {}
 
   async ngOnInit() {
-    console.log('🔌 Testing Supabase connection...');
+    
 
     const { data, error } = await this.supabase.client
       .from('surveys')
@@ -24,7 +24,7 @@ export class App implements OnInit {
     if (error) {
       console.error('❌ Supabase error:', error);
     } else {
-      console.log('✅ Supabase connected! Data:', data);
+    
     }
   }
 }

@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Validators } from '@angular/forms';
-import { supabase } from '../../supabaseClient';
-
 import {
+  Validators,
   FormArray,
   FormBuilder,
   FormGroup,
@@ -11,24 +9,36 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { SurveyService } from '../../core/services/survey.service';
+import { QuestionService } from '../../core/services/question.service';
+import {
+  createQuestion,
+  createAnswer,
+  addAnswerToQuestion,
+  removeAnswerFromQuestion,
+  toLetter,
+} from '../../core/utils/form-utils';
+import { publishSurveyLogic } from '../../core/utils/publish-utils';
 
 @Component({
   selector: 'app-create-survey',
   standalone: true,
   imports: [RouterLink, CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './create-survey.html',
-  styleUrl: './create-survey.scss',
+  styleUrls: ['./create-survey.scss'],
 })
 export class CreateSurvey {
   surveyForm: FormGroup;
   isPublishing = false;
-
+  toastVisible = false;
   dropdownOpen = false;
   selectedCategory: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private surveyService: SurveyService,
+    private questionService: QuestionService,
   ) {
     this.surveyForm = this.fb.group({
       name: ['', Validators.required],
@@ -37,25 +47,21 @@ export class CreateSurvey {
       description: [''],
       questions: this.fb.array<FormGroup>([]),
     });
-
-    // Standardmäßig 1 Frage + 2 Antworten
     this.addQuestion();
     this.addAnswer(0);
     this.addAnswer(0);
   }
 
-  // DROPDOWN
-  toggleDropdown() {
+  toggleDropdown(): void {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
-  selectCategory(cat: string) {
+  selectCategory(cat: string): void {
     this.selectedCategory = cat;
     this.surveyForm.get('category')?.setValue(cat);
     this.dropdownOpen = false;
   }
 
-  // FORMARRAY GETTER
   get questions(): FormArray<FormGroup> {
     return this.surveyForm.get('questions') as FormArray<FormGroup>;
   }
@@ -64,123 +70,54 @@ export class CreateSurvey {
     return q.get('answers') as FormArray<FormGroup>;
   }
 
-  toLetter(index: number): string {
-    return String.fromCharCode(65 + index);
-  }
-
-  // FRAGEN
-  addQuestion() {
-    const question = this.fb.group({
-      text: ['', Validators.required],
-      allowMultiple: [false],
-      answers: this.fb.array<FormGroup>([]),
-    });
-
+  addQuestion(): void {
+    const question = createQuestion(this.fb);
     this.questions.push(question);
-
     const index = this.questions.length - 1;
-
-    // Ab Frage 2 → automatisch 2 Antworten
     if (index > 0) {
-      this.addAnswer(index);
-      this.addAnswer(index);
+      addAnswerToQuestion(this.fb, question);
+      addAnswerToQuestion(this.fb, question);
     }
   }
 
-  removeQuestion(index: number) {
+  removeQuestion(index: number): void {
     this.questions.removeAt(index);
   }
 
-  // ANTWORTEN
-  addAnswer(questionIndex: number) {
-    const answers = this.getAnswers(this.questions.at(questionIndex));
-
-    if (answers.length >= 6) return;
-
-    const answer = this.fb.group({
-      text: ['', Validators.required],
-    });
-
-    answers.push(answer);
+  addAnswer(questionIndex: number): void {
+    const question = this.questions.at(questionIndex);
+    addAnswerToQuestion(this.fb, question);
   }
 
-  removeAnswer(questionIndex: number, answerIndex: number) {
-    const answers = this.getAnswers(this.questions.at(questionIndex));
-
-    if (answers.length <= 2) return;
-
-    answers.removeAt(answerIndex);
+  removeAnswer(questionIndex: number, answerIndex: number): void {
+    const question = this.questions.at(questionIndex);
+    removeAnswerFromQuestion(question, answerIndex);
   }
 
-  // PUBLISH
-  async publishSurvey() {
+  toLetter(index: number): string {
+    return toLetter(index);
+  }
+
+  async publishSurvey(): Promise<void> {
     if (this.surveyForm.invalid || this.questions.length === 0) return;
-
     this.isPublishing = true;
-
-    const { name, description, endDate, category } = this.surveyForm.value;
-
-    const { data: survey, error } = await supabase
-      .from('surveys')
-      .insert({
-        name,
-        description,
-        category: this.selectedCategory,
-        end_date: endDate || null,
-        status: 'published',
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error(error);
+    try {
+      const surveyId = await publishSurveyLogic(
+        this.surveyService,
+        this.questionService,
+        this.surveyForm.value,
+        this.selectedCategory,
+        this.questions.value,
+      );
+      this.showToast('Your survey is now published');
+      setTimeout(() => this.router.navigate(['/home']), 2200);
+    } catch {
       this.isPublishing = false;
-      return;
     }
-
-    await this.saveQuestions(survey.id);
-    this.isPublishing = false;
-
-    // ✅ Toast anzeigen
-    this.showToast('Your survey is now published');
-
-    setTimeout(() => {
-      this.router.navigate(['/single', survey.id]);
-    }, 2200);
   }
 
-  toastVisible = false;
-
-  showToast(message: string) {
+  showToast(message: string): void {
     this.toastVisible = true;
     setTimeout(() => (this.toastVisible = false), 2000);
-  }
-
-  // FRAGEN + ANTWORTEN SPEICHERN
-  async saveQuestions(surveyId: number) {
-    for (let q of this.questions.controls) {
-      const text = q.get('text')?.value;
-      const allowMultiple = q.get('allowMultiple')?.value;
-
-      const { data: question } = await supabase
-        .from('questions')
-        .insert({
-          survey_id: surveyId,
-          text,
-          allow_multiple: allowMultiple,
-        })
-        .select()
-        .single();
-
-      const answerInserts = q.get('answers')!.value.map((a: any) =>
-        supabase.from('answers').insert({
-          question_id: question.id,
-          text: a.text,
-        }),
-      );
-
-      await Promise.all(answerInserts);
-      console.log(answerInserts);
-    }
   }
 }
